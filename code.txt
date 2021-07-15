@@ -1,0 +1,116 @@
+      if (state == 1) {
+        Serial.println("Start Washing!");
+//        playWave(square, WAV_SIZE, C5S_HZ, 0.3);
+//        
+//        playWave(square, WAV_SIZE, A4_HZ, 0.15);
+//        
+//        playWave(square, WAV_SIZE, F4S_HZ, 0.15);
+//        
+//        playWave(square, WAV_SIZE, B4_HZ, 0.15);
+//        
+//        playWave(square, WAV_SIZE, A4_HZ, 0.15);
+//        
+//        playWave(square, WAV_SIZE, C5S_HZ, 0.15);
+      int notes = sizeof(melody) / sizeof(melody[0]) / 2;
+      int tempo = 80;
+      // this calculates the duration of a whole note in ms
+      int wholenote = (60 * 4) / tempo;
+      
+      int divider = 0, noteDuration = 0;
+      
+       for (int thisNote = 0; thisNote < notes * 2; thisNote = thisNote + 2) {
+      
+          // calculates the duration of each note
+          divider = pgm_read_word_near(melody+thisNote + 1);
+          if (divider > 0) {
+            // regular note, just proceed
+            noteDuration = (wholenote) / divider;
+          } else if (divider < 0) {
+            // dotted notes are represented with negative durations!!
+            noteDuration = (wholenote) / abs(divider);
+            noteDuration *= 1.5; // increases the duration in half for dotted notes
+          }
+          playWave(square, WAV_SIZE, pgm_read_word_near(melody+thisNote), 0.15);
+          // we only play the note for 90% of the duration, leaving 10% as a pause
+          
+          // Wait for the specief duration before playing the next note.
+          //delay(noteDuration * 1000);
+        }
+        
+        
+      }
+      else if (state == 2)
+      {
+        
+      }
+
+      state = 6;
+
+      display_status();
+      analogWrite(BTN_PIN_GREEN, 255);
+      analogWrite(BTN_PIN_BLUE, 255);
+      analogWrite(BTN_PIN_RED, 255);
+      // ramp up motor
+      digitalWrite(PIN_MOTOR_ENABLE, LOW);
+      analogWrite(PIN_MOTOR_CTRL_A, 200);
+      for(uint8_t i = 0; i < 255; i++)
+      {
+        //analogWrite(PIN_MOTOR_CTRL, i);
+        analogWrite(BTN_PIN_BLUE, i);
+        delay(100);
+      }
+
+      delay(5000);
+
+      state = 7;
+      display_status();
+      analogWrite(PIN_MOTOR_CTRL_A, 0);
+      digitalWrite(PIN_MOTOR_CTRL_A, LOW);
+
+      digitalWrite(PIN_MOTOR_ENABLE, LOW);
+      analogWrite(BTN_PIN_GREEN, 0);
+      analogWrite(BTN_PIN_BLUE, 255);
+      analogWrite(BTN_PIN_RED, 255);
+
+    }
+    
+    
+    
+    
+enum MachineStatus
+{ 
+  Idle, 
+  WashingPhase1, 
+  WashingPhase2,
+  WashingPhase3,
+  Music
+};
+
+
+enum MachineMode
+{
+   Normal,
+   Delicate,
+   Heavy,
+   Fun,
+   Song
+};
+
+#define MAX_MACHINE_MODE 5
+
+enum Clip{
+  MStart,
+  MStop,
+  MUp,
+  MDown
+}
+
+enum Song{
+  FurElise,
+  Mario
+}
+
+enum MenuLevel{
+  Main,
+  Music
+}
